@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>War of Ages - Opening Page</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: url('https://www.itl.cat/pngfile/big/149-1494117_total-war-arena-arminius-4k-hd-desktop.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 4em;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.7);
+            margin-bottom: 20px;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .form-group input, .form-group select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 2px solid #444;
+            border-radius: 5px;
+            margin-top: 5px;
+            background-color: #333;
+            color: white;
+        }
+
+        .form-group select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="%23ffffff" d="M2 0L0 2h4zm0 5L0 3h4z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 10px;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            color: white;
+            background-color: #e74c3c;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #c0392b;
+        }
+
+        .logo {
+            width: 200px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 3em;
+            }
+
+            .container {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .form-group input, .form-group select {
+                padding: 8px;
+            }
+
+            button {
+                padding: 12px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfhrrttiXw_eWPr8BfgL3FsRquIYvQHQI01w&s" alt="Game Logo" class="logo">
+    <h1>War of Ages</h1>
+    <div class="container">
+        <form id="gameSetupForm">
+            <div class="form-group">
+                <label for="player1Name">Player 1 Name:</label>
+                <input type="text" id="player1Name" name="player1Name" required>
+            </div>
+            <div class="form-group">
+                <label for="player1Color">Player 1 Color:</label>
+                <select id="player1Color" name="player1Color">
+                    <option value="purple">Purple</option>
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="orange">Orange</option>
+                    <option value="pink">Pink</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="player2Name">Player 2 Name:</label>
+                <input type="text" id="player2Name" name="player2Name" required>
+            </div>
+            <div class="form-group">
+                <label for="player2Color">Player 2 Color:</label>
+                <select id="player2Color" name="player2Color">
+                    <option value="purple">Purple</option>
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="orange">Orange</option>
+                    <option value="pink">Pink</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="player3Name">Player 3 Name:</label>
+                <input type="text" id="player3Name" name="player3Name" required>
+            </div>
+            <div class="form-group">
+                <label for="player3Color">Player 3 Color:</label>
+                <select id="player3Color" name="player3Color">
+                    <option value="purple">Purple</option>
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="orange">Orange</option>
+                    <option value="pink">Pink</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="player4Name">Player 4 Name:</label>
+                <input type="text" id="player4Name" name="player4Name" required>
+            </div>
+            <div class="form-group">
+                <label for="player4Color">Player 4 Color:</label>
+                <select id="player4Color" name="player4Color">
+                    <option value="purple">Purple</option>
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="orange">Orange</option>
+                    <option value="pink">Pink</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                </select>
+            </div>
+            <button type="button" onclick="startGame()">Play the Game</button>
+        </form>
+    </div>
+
+    <script>
+        function startGame() {
+            const form = document.getElementById('gameSetupForm');
+            const formData = new FormData(form);
+            const players = [];
+
+            for (let i = 1; i <= 4; i++) {
+                players.push({
+                    id: `p${i}`,
+                    name: formData.get(`player${i}Name`),
+                    color: formData.get(`player${i}Color`),
+                    food: 1000,
+                    wood: 1000,
+                    gold: 1000,
+                    firstMove: true,
+                    scout: null
+                });
+            }
+
+            localStorage.setItem('players', JSON.stringify(players));
+            window.location.href = 'game.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>War of Ages</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: url('https://cdn.neowin.com/news/images/uploaded/2019/11/1573768130_chrome_caeqds9byi.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            margin: 0;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #ecf0f1;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin: 20px;
+        }
+
+        #map {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+            width: 75vw;
+            height: 75vw;
+            max-width: 1125px;
+            max-height: 1125px;
+            gap: 0px;
+            margin: 0px;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 0px;
+           
+         
+        }
+
+        .tile {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+           height: 50px;
+           width: 50px;
+            position: relative;
+     
+        
+        }
+
+     .tile img {
+        height: 100%;
+        width: 100%;
+        position:absolute;
+      
+      
+        
+     }
+
+       
+        .wood {
+            background-color: #a0522d;
+            color: #fff;
+            height: 50px;
+            width: 50px;
+        }
+
+        .food {
+            background-color: #27ae60;
+            color: #fff;
+            height: 50px;
+            width: 50px;
+        }
+
+        .gold .overlay {
+            background-color: #f1c40f;
+            color: #fff;
+            height: 50px;
+            width: 50px;
+        }
+
+        .purple .overlay{
+            background-color: #8e44ad;
+            color: #fff;
+        }
+
+        .black .overlay{
+            background-color: rgb(0, 0, 0);
+            color: #fff;
+        
+        }
+
+        .red .overlay{
+            background-color: #e74c3c;
+            color: #fff;
+        }
+
+        .blue .overlay{
+            background-color: #3498db;
+            color: #fff;
+        }
+
+        .green .overlay {
+            background-color: #2ecc71;
+            color: #fff;
+
+        }
+
+        .yellow .overlay{
+            background-color: #f39c12;
+            color: #fff;
+        }
+
+        .orange .overlay{
+            background-color: #e67e22;
+            color: #fff;
+        }
+
+        .pink .overlay {
+            background-color: #fd79a8;
+            color: #fff;
+        }
+
+        .brown .overlay{
+            background-color: #d35400;
+            color: #fff;
+        }
+
+        .gray .overlay {
+            background-color: #95a5a6;
+            color: #fff;
+        }
+
+    .overlay{
+     
+        height: 50px;
+        width: 50px;
+        position: absolute;
+        opacity: 0.5;
+    }
+
+        .capital {
+            font-weight: bold;
+            border: 2px solid gold;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .capital img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .unit img {
+            width: 50px;
+            height: 50px;
+        }
+
+        .resource img {
+            width: 50px;
+            height: 50px;
+        }
+        .resource{
+            height: 50px;
+            width: 50px;
+        }
+
+        .unit{
+            height: 50px;
+            width: 50px;
+        }
+
+        .capital{
+            height: 50px;
+            width: 50px;
+        }
+        .unit-name,  .capital-name,  .resource-name {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+        }
+
+        #status, #resources {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            margin: 10px;
+            width: calc(100% - 40px);
+            max-width: 800px;
+            text-align: center;
+        }
+
+        #status {
+            font-size: 1.5em;
+            margin-top: 20px;
+        }
+
+        #resources .player-resources {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            #map {
+                grid-template-columns: repeat(15, 1fr);
+                grid-template-rows: repeat(15, 1fr);
+                width: 90vw;
+                height: 90vw;
+            }
+
+            #status, #resources {
+                font-size: 1em;
+                padding: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRfhrrttiXw_eWPr8BfgL3FsRquIYvQHQI01w&s" alt="Game Logo" class="logo">
+    <h1>War of Ages</h1>
+    <div id="map"></div>
+    <div id="status"></div>
+    <div id="resources"></div>
+    <script>
+        const mapSize = 15;
+        const resources = ["wood", "food", "gold"];
+        const resourceImages = {
+            wood: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-P2cpgbYaWOLVMBTPlJRHrLcXB-FneWE8jQ&s',
+            food: 'https://i.pinimg.com/originals/c9/34/2d/c9342dce111123e808224dba1e55dc33.jpg',
+            gold: 'https://th.bing.com/th/id/OIP.mh3Gz18Yjvb3wMCdANgnbgAAAA?w=153&h=147&c=7&r=0&o=5&dpr=1.5&pid=1.7'
+        };
+
+        // Array of background images for each tile
+        const tileBackgrounds = [
+            'Tiles/tile_0012.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png',
+            'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png',
+            'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0014.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
+            'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
+            'Tiles/tile_0036.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png',
+            'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png',
+            'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0037.png', 'Tiles/tile_0038.png',
+        ];
+
+        let players = JSON.parse(localStorage.getItem('players')) || [];
+        let currentPlayerIndex = 0;
+        let map = [];
+        const mapElement = document.getElementById("map");
+        const statusElement = document.getElementById("status");
+        const resourcesElement = document.getElementById("resources");
+
+        function initMap() {
+            let tileIndex = 0;
+            for (let i = 0; i < mapSize; i++) {
+                map[i] = [];
+                for (let j = 0; j < mapSize; j++) {
+                    const tile = document.createElement("div");
+                 tile.className = "tile";
+                    
+                      const overlay = document.createElement("div")
+                    overlay.className="overlay"
+                      tile.innerHTML = `<img src="${tileBackgrounds[tileIndex]}">`
+                    tile.dataset.row = i;
+                    tile.dataset.col = j;
+                
+                    tileIndex++;
+                    tile.addEventListener("click", () => handleTileClick(i, j));
+                    map[i][j] = {
+                        element: tile,
+                        resource: null,
+                        resourceAmount: 0,
+                        claimedBy: null,
+                        unit: null,
+                        turnsClaimed: 0,
+                    };
+                    mapElement.appendChild(tile);
+                    tile.appendChild(overlay)
+                }
+            }
+            placeResources();
+        }
+
+        function placeResources() {
+            resources.forEach((resource) => {
+                for (let i = 0; i < 6; i++) {
+                    let placed = false;
+                    while (!placed) {
+                        const row = Math.floor(Math.random() * mapSize);
+                        const col = Math.floor(Math.random() * mapSize);
+                        if (!map[row][col].resource) {
+                            map[row][col].resource = resource;
+                            map[row][col].resourceAmount = 10000;
+                            map[row][col].element.classList.add(resource);
+                            map[row][col].element.innerHTML = `<div class="resource"><img src="${resourceImages[resource]}" alt="${resource.charAt(0).toUpperCase() + resource.slice(1)}"><div class="resource-name">${resource.charAt(0).toUpperCase() + resource.slice(1)}</div></div>`;
+                            placed = true;
+                        }
+                    }
+                }
+            });
+        }
+
+        function handleTileClick(row, col) {
+            const tile = map[row][col];
+            const currentPlayer = players[currentPlayerIndex];
+
+            if (currentPlayer.firstMove && !tile.claimedBy) {
+                tile.claimedBy = currentPlayer.id;
+                tile.unit = "capital";
+                tile.element.classList.add(currentPlayer.color, "capital");
+                tile.element.innerHTML = `<div class="capital"><img src="https://cdn.dribbble.com/users/5844373/screenshots/17229205/castle-01.png" alt="Capital"><div class="capital-name">Capital</div></div>`;
+                spawnUnit(row, col, "scout", "https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5", "Scout");
+                currentPlayer.firstMove = false;
+                currentPlayer.scout = { row, col };
+                endTurn();
+            } else if (!currentPlayer.firstMove && currentPlayer.scout) {
+                moveScout(row, col);
+            }
+        }
+
+        function updateStatus() {
+            const currentPlayer = players[currentPlayerIndex];
+            statusElement.innerText = `Current Player: ${currentPlayer.name}`;
+        }
+
+        function updateResourcesUI() {
+            resourcesElement.innerHTML = "";
+            players.forEach((player) => {
+                const playerResources = document.createElement("div");
+                playerResources.classList.add("player-resources");
+                playerResources.innerHTML = `<strong>${player.name} (${player.color}):</strong> Food: ${player.food}, Wood: ${player.wood}, Gold: ${player.gold}`;
+                resourcesElement.appendChild(playerResources);
+            });
+        }
+
+        function endTurn() {
+            const currentPlayer = players[currentPlayerIndex];
+            extractResources(currentPlayer);
+
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            updateStatus();
+            updateResourcesUI();
+        }
+
+        function extractResources(player) {
+            map.forEach(row => {
+                row.forEach(tile => {
+                    if (tile.claimedBy === player.id && tile.resource && tile.resourceAmount > 0) {
+                        const extractAmount = Math.min(1000, tile.resourceAmount);
+                        tile.resourceAmount -= extractAmount;
+                        tile.turnsClaimed += 1;
+                        if (tile.resource === 'food') {
+                            player.food += extractAmount;
+                        } else if (tile.resource === 'wood') {
+                            player.wood += extractAmount;
+                        } else if (tile.resource === 'gold') {
+                            player.gold += extractAmount;
+                        }
+
+                        if (tile.resourceAmount <= 0) {
+                            tile.resource = null;
+                            tile.element.classList.remove('food', 'wood', 'gold');
+                            tile.element.innerHTML = '';
+                        } else {
+                            tile.element.innerHTML = `<div class="resource"><img src="${resourceImages[tile.resource]}" alt="${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}"><div class="resource-name">${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}</div></div>`;
+                        }
+                    }
+                });
+            });
+        }
+
+        function spawnUnit(row, col, unitType, imageUrl, unitName) {
+            const tile = map[row][col];
+            tile.unit = unitType;
+            tile.element.innerHTML += `<div class="unit"><img src="${imageUrl}" alt="${unitName}"><div class="unit-name">${unitName}</div></div>`;
+        }
+
+        function moveScout(newRow, newCol) {
+            const currentPlayer = players[currentPlayerIndex];
+            const scoutPosition = currentPlayer.scout;
+
+            if (scoutPosition && (newRow !== scoutPosition.row || newCol !== scoutPosition.col)) {
+                const currentTile = map[scoutPosition.row][scoutPosition.col];
+                const newTile = map[newRow][newCol];
+
+                if (!newTile.claimedBy || newTile.claimedBy === currentPlayer.id) {
+                    const scoutElement = currentTile.element.querySelector(".unit");
+
+                    if (scoutElement) {
+                        currentTile.element.removeChild(scoutElement);
+
+                        if (currentTile.unit === "capital") {
+                            currentTile.element.innerHTML += currentTile.element.dataset.capitalContent || "";
+                        } else if (currentTile.resource) {
+                            currentTile.element.innerHTML = `<div class="resource"><img src="${resourceImages[currentTile.resource]}" alt="${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}"><div class="resource-name">${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}</div></div>`;
+                        }
+                    }
+
+                    const scoutHtml = `<div class="unit"><img src="https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5"><div class="unit-name">Scout</div></div>`;
+                    const newScoutElement = document.createElement('div');
+                    newScoutElement.innerHTML = scoutHtml;
+                    newTile.element.appendChild(newScoutElement.firstChild);
+
+                    newTile.unit = "scout";
+                    newTile.claimedBy = currentPlayer.id;
+                    newTile.element.classList.add(currentPlayer.color);
+
+                    if (newTile.resource) {
+                        const resourceElement = document.createElement('div');
+                        resourceElement.innerHTML = `<div class="resource"><img src="${resourceImages[newTile.resource]}" alt="${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}"><div class="resource-name">${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}</div></div>`;
+                        newTile.element.appendChild(resourceElement);
+                    }
+
+                    currentPlayer.scout = { row: newRow, col: newCol };
+                    endTurn();
+                }
+            }
+        }
+
+        function initializeGame() {
+            initMap();
+            updateStatus();
+            updateResourcesUI();
+        }
+
+        initializeGame();
+    </script>
+</body>
+</html>
+
+
+<!-- <div style="
+    position: relative;"><div class="overlay black"></div> <img src="Tiles/tile_0024.png" style="
+    height: 50px;
+    width: 50px;
+    position: absolute;
+    top: 0;
+    left: 0;
+"></div>
+
+.black {
+    background-color: rgba(0,0,0,0.25);
+    color: #fff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 50px;
+    width: 50px;
+    z-index: 2;
+} -->
+
+<!-- 
+<div class="tile" data-row="1" data-col="14" style="background-image: url(&quot;Tiles/tile_0026.png&quot;);"></div>
+.tile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0px solid #2c3e50;
+    position: relative;
+    border-radius: 0px;
+    transition: background-color 0.3s, transform 0.2s;
+    background-size: cover;
+    background-position: center;
+} -->
