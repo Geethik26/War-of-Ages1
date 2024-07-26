@@ -33,73 +33,60 @@
             height: 75vw;
             max-width: 1125px;
             max-height: 1125px;
-            gap: 0px;
-            margin: 0px;
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 0px;
-           
-         
         }
 
         .tile {
             display: flex;
             align-items: center;
             justify-content: center;
-           height: 50px;
-           width: 50px;
+            height: 100%;
+            width: 100%;
             position: relative;
-     
-        
         }
 
-     .tile img {
-        height: 100%;
-        width: 100%;
-        position:absolute;
-      
-      
-        
-     }
+        .tile img {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+        }
 
-       
         .wood {
             background-color: #a0522d;
             color: #fff;
-            height: 50px;
-            width: 50px;
+            height: 100%;
+            width: 100%;
         }
 
         .food {
             background-color: #27ae60;
             color: #fff;
-            height: 50px;
-            width: 50px;
+            height: 100%;
+            width: 100%;
         }
 
-        .gold .overlay {
+        .gold {
             background-color: #f1c40f;
             color: #fff;
-            height: 50px;
-            width: 50px;
+            height: 100%;
+            width: 100%;
         }
 
-        .purple .overlay{
+        .purple .overlay {
             background-color: #8e44ad;
             color: #fff;
         }
 
-        .black .overlay{
+        .black .overlay {
             background-color: rgb(0, 0, 0);
             color: #fff;
-        
         }
 
-        .red .overlay{
+        .red .overlay {
             background-color: #e74c3c;
             color: #fff;
         }
 
-        .blue .overlay{
+        .blue .overlay {
             background-color: #3498db;
             color: #fff;
         }
@@ -107,15 +94,14 @@
         .green .overlay {
             background-color: #2ecc71;
             color: #fff;
-
         }
 
-        .yellow .overlay{
+        .yellow .overlay {
             background-color: #f39c12;
             color: #fff;
         }
 
-        .orange .overlay{
+        .orange .overlay {
             background-color: #e67e22;
             color: #fff;
         }
@@ -125,7 +111,7 @@
             color: #fff;
         }
 
-        .brown .overlay{
+        .brown .overlay {
             background-color: #d35400;
             color: #fff;
         }
@@ -135,13 +121,12 @@
             color: #fff;
         }
 
-    .overlay{
-     
-        height: 50px;
-        width: 50px;
-        position: absolute;
-        opacity: 0.5;
-    }
+        .overlay {
+            height: 100%;
+            width: 100%;
+            position: absolute;
+            opacity: 0.5;
+        }
 
         .capital {
             font-weight: bold;
@@ -151,8 +136,8 @@
         }
 
         .capital img {
-            width: 50px;
-            height: 50px;
+            height: 100%;
+            width: 100%;
         }
 
         .unit img {
@@ -164,21 +149,25 @@
             width: 50px;
             height: 50px;
         }
-        .resource{
+
+        .resource {
             height: 50px;
             width: 50px;
         }
 
-        .unit{
+        .unit {
             height: 50px;
             width: 50px;
         }
 
-        .capital{
-            height: 50px;
-            width: 50px;
+        .capital {
+            height: 100%;
+            width: 100%;
         }
-        .unit-name,  .capital-name,  .resource-name {
+
+        .unit-name,
+        .capital-name,
+        .resource-name {
             position: absolute;
             bottom: 0;
             left: 0;
@@ -189,7 +178,8 @@
             color: white;
         }
 
-        #status, #resources {
+        #status,
+        #resources {
             background: rgba(0, 0, 0, 0.7);
             padding: 10px;
             border-radius: 5px;
@@ -221,7 +211,8 @@
                 height: 90vw;
             }
 
-            #status, #resources {
+            #status,
+            #resources {
                 font-size: 1em;
                 padding: 5px;
             }
@@ -243,7 +234,6 @@
             gold: 'https://th.bing.com/th/id/OIP.mh3Gz18Yjvb3wMCdANgnbgAAAA?w=153&h=147&c=7&r=0&o=5&dpr=1.5&pid=1.7'
         };
 
-        // Array of background images for each tile
         const tileBackgrounds = [
             'Tiles/tile_0012.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png',
             'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png',
@@ -305,14 +295,14 @@
                 map[i] = [];
                 for (let j = 0; j < mapSize; j++) {
                     const tile = document.createElement("div");
-                 tile.className = "tile";
-                    
-                      const overlay = document.createElement("div")
-                    overlay.className="overlay"
-                      tile.innerHTML = `<img src="${tileBackgrounds[tileIndex]}">`
+                    tile.className = "tile";
+
+                    const overlay = document.createElement("div");
+                    overlay.className = "overlay";
+                    tile.innerHTML = `<img src="${tileBackgrounds[tileIndex]}">`;
                     tile.dataset.row = i;
                     tile.dataset.col = j;
-                
+
                     tileIndex++;
                     tile.addEventListener("click", () => handleTileClick(i, j));
                     map[i][j] = {
@@ -321,10 +311,12 @@
                         resourceAmount: 0,
                         claimedBy: null,
                         unit: null,
+                        location: null,
+                        building: null,
                         turnsClaimed: 0,
                     };
                     mapElement.appendChild(tile);
-                    tile.appendChild(overlay)
+                    tile.appendChild(overlay);
                 }
             }
             placeResources();
@@ -353,18 +345,76 @@
             const tile = map[row][col];
             const currentPlayer = players[currentPlayerIndex];
 
-            if (currentPlayer.firstMove && !tile.claimedBy) {
+            if (currentPlayer.firstMove && !tile.claimedBy && !tile.resource) {
                 tile.claimedBy = currentPlayer.id;
-                tile.unit = "capital";
+                tile.location = "capital";
                 tile.element.classList.add(currentPlayer.color, "capital");
-                tile.element.innerHTML = `<div class="capital"><img src="https://cdn.dribbble.com/users/5844373/screenshots/17229205/castle-01.png" alt="Capital"><div class="capital-name">Capital</div></div>`;
+                tile.element.innerHTML = `<div class="capital"><img src="https://th.bing.com/th/id/OIP.yR8w-_tRPepKOuXOR8_QCQAAAA?pid=ImgDet&w=177&h=149&c=7&dpr=1.5" alt="Capital"><div class="capital-name">Capital</div></div>`;
                 spawnUnit(row, col, "scout", "https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5", "Scout");
                 currentPlayer.firstMove = false;
                 currentPlayer.scout = { row, col };
                 endTurn();
+            } else if (tile.claimedBy === currentPlayer.id) {
+                if (tile.building === "barracks") {
+                    showBarracksOptions(row, col);
+                } else {
+                    showScoutOptions(row, col);
+                }
             } else if (!currentPlayer.firstMove && currentPlayer.scout) {
                 moveScout(row, col);
             }
+        }
+
+        function showScoutOptions(row, col) {
+            const currentPlayer = players[currentPlayerIndex];
+            const tile = map[row][col];
+
+            if (tile.building === "barracks") {
+                alert("This tile already has a barracks.");
+            } else if (confirm("Would you like to claim and build barracks here?")) {
+                if (currentPlayer.gold >= 5000 && currentPlayer.wood >= 5000) {
+                    currentPlayer.gold -= 5000;
+                    currentPlayer.wood -= 5000;
+                    buildBarracks(row, col);
+                } else {
+                    alert("You don't have enough resources to build barracks.");
+                }
+            } else {
+                moveScout(row, col);
+            }
+        }
+
+        function showBarracksOptions(row, col) {
+            const currentPlayer = players[currentPlayerIndex];
+            const tile = map[row][col];
+
+            if (tile.unit === "soldier") {
+                alert("This tile already has a soldier.");
+            } else if (confirm("Would you like to create a soldier here?")) {
+                if (currentPlayer.food >= 2000 && currentPlayer.wood >= 1000) {
+                    currentPlayer.food -= 2000;
+                    currentPlayer.wood -= 1000;
+                    createSoldier(row, col);
+                } else {
+                    alert("You don't have enough resources to create a soldier.");
+                }
+            }
+        }
+
+        function buildBarracks(row, col) {
+            const tile = map[row][col];
+            const currentPlayer = players[currentPlayerIndex];
+
+            tile.claimedBy = currentPlayer.id;
+            tile.building = "barracks";
+            tile.element.classList.add(currentPlayer.color);
+            tile.element.innerHTML = `<img src="${tileBackgrounds[row * mapSize + col]}"><div class="overlay"></div><div class="unit"><img src="https://th.bing.com/th/id/OIP.n5aND4i9DluNyOZsBP3RHwHaF4?w=196&h=176&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Barracks"><div class="unit-name">Barracks</div></div>`;
+            endTurn();
+        }
+
+        function createSoldier(row, col) {
+            spawnUnit(row, col, "soldier", "https://th.bing.com/th/id/OIP.1pFzwni7nJiMi1XBMYpUjQAAAA?pid=ImgDet&w=201&h=219&c=7&dpr=1.5", "Soldier");
+            endTurn();
         }
 
         function updateStatus() {
@@ -392,12 +442,13 @@
         }
 
         function extractResources(player) {
-            map.forEach(row => {
-                row.forEach(tile => {
+            map.forEach((row, rowIndex) => {
+                row.forEach((tile, colIndex) => {
                     if (tile.claimedBy === player.id && tile.resource && tile.resourceAmount > 0) {
-                        const extractAmount = Math.min(1000, tile.resourceAmount);
+                        const extractAmount = Math.min(5000, tile.resourceAmount);
                         tile.resourceAmount -= extractAmount;
                         tile.turnsClaimed += 1;
+
                         if (tile.resource === 'food') {
                             player.food += extractAmount;
                         } else if (tile.resource === 'wood') {
@@ -409,9 +460,9 @@
                         if (tile.resourceAmount <= 0) {
                             tile.resource = null;
                             tile.element.classList.remove('food', 'wood', 'gold');
-                            tile.element.innerHTML = '';
+                            tile.element.innerHTML = `<img src="${tileBackgrounds[rowIndex * mapSize + colIndex]}" alt="Tile Background"><div class="overlay"></div>`;
                         } else {
-                            tile.element.innerHTML = `<div class="resource"><img src="${resourceImages[tile.resource]}" alt="${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}"><div class="resource-name">${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}</div></div>`;
+                            tile.element.innerHTML = `<div class="resource"><img src="${resourceImages[tile.resource]}" alt="${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}"><div class="resource-name">${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}</div></div><div class="overlay"></div>`;
                         }
                     }
                 });
@@ -428,41 +479,38 @@
             const currentPlayer = players[currentPlayerIndex];
             const scoutPosition = currentPlayer.scout;
 
-            if (scoutPosition && (newRow !== scoutPosition.row || newCol !== scoutPosition.col)) {
+            const newTile = map[newRow][newCol];
+            if (scoutPosition && (newRow !== scoutPosition.row || newCol !== scoutPosition.col) && (!newTile.claimedBy || newTile.claimedBy === currentPlayer.id)) {
                 const currentTile = map[scoutPosition.row][scoutPosition.col];
-                const newTile = map[newRow][newCol];
+                const scoutElement = currentTile.element.querySelector(".unit");
 
-                if (!newTile.claimedBy || newTile.claimedBy === currentPlayer.id) {
-                    const scoutElement = currentTile.element.querySelector(".unit");
+                if (scoutElement) {
+                    currentTile.element.removeChild(scoutElement);
 
-                    if (scoutElement) {
-                        currentTile.element.removeChild(scoutElement);
-
-                        if (currentTile.unit === "capital") {
-                            currentTile.element.innerHTML += currentTile.element.dataset.capitalContent || "";
-                        } else if (currentTile.resource) {
-                            currentTile.element.innerHTML = `<div class="resource"><img src="${resourceImages[currentTile.resource]}" alt="${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}"><div class="resource-name">${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}</div></div>`;
-                        }
+                    if (currentTile.location === "capital") {
+                        currentTile.element.innerHTML += currentTile.element.dataset.capitalContent || "";
+                    } else if (currentTile.resource) {
+                        currentTile.element.innerHTML = `<div class="resource"><img src="${resourceImages[currentTile.resource]}" alt="${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}"><div class="resource-name">${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}</div></div>`;
                     }
-
-                    const scoutHtml = `<div class="unit"><img src="https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5"><div class="unit-name">Scout</div></div>`;
-                    const newScoutElement = document.createElement('div');
-                    newScoutElement.innerHTML = scoutHtml;
-                    newTile.element.appendChild(newScoutElement.firstChild);
-
-                    newTile.unit = "scout";
-                    newTile.claimedBy = currentPlayer.id;
-                    newTile.element.classList.add(currentPlayer.color);
-
-                    if (newTile.resource) {
-                        const resourceElement = document.createElement('div');
-                        resourceElement.innerHTML = `<div class="resource"><img src="${resourceImages[newTile.resource]}" alt="${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}"><div class="resource-name">${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}</div></div>`;
-                        newTile.element.appendChild(resourceElement);
-                    }
-
-                    currentPlayer.scout = { row: newRow, col: newCol };
-                    endTurn();
                 }
+
+                const scoutHtml = `<div class="unit"><img src="https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5"><div class="unit-name">Scout</div></div>`;
+                const newScoutElement = document.createElement('div');
+                newScoutElement.innerHTML = scoutHtml;
+                newTile.element.appendChild(newScoutElement.firstChild);
+
+                newTile.unit = "scout";
+                newTile.claimedBy = currentPlayer.id;
+                newTile.element.classList.add(currentPlayer.color);
+
+                if (newTile.resource) {
+                    const resourceElement = document.createElement('div');
+                    resourceElement.innerHTML = `<div class="resource"><img src="${resourceImages[newTile.resource]}" alt="${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}"><div class="resource-name">${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}</div></div>`;
+                    newTile.element.appendChild(resourceElement);
+                }
+
+                currentPlayer.scout = { row: newRow, col: newCol };
+                endTurn();
             }
         }
 
@@ -476,38 +524,3 @@
     </script>
 </body>
 </html>
-
-
-<!-- <div style="
-    position: relative;"><div class="overlay black"></div> <img src="Tiles/tile_0024.png" style="
-    height: 50px;
-    width: 50px;
-    position: absolute;
-    top: 0;
-    left: 0;
-"></div>
-
-.black {
-    background-color: rgba(0,0,0,0.25);
-    color: #fff;
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 50px;
-    width: 50px;
-    z-index: 2;
-} -->
-
-<!-- 
-<div class="tile" data-row="1" data-col="14" style="background-image: url(&quot;Tiles/tile_0026.png&quot;);"></div>
-.tile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 0px solid #2c3e50;
-    position: relative;
-    border-radius: 0px;
-    transition: background-color 0.3s, transform 0.2s;
-    background-size: cover;
-    background-position: center;
-} -->
