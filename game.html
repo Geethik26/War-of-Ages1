@@ -70,6 +70,12 @@
             height: 100%;
             width: 100%;
         }
+        .water  {
+            background-color: lightskyblue;
+            color: #fff;
+            height: 100%;
+            width: 100%;
+        }
 
         .purple .overlay {
             background-color: #8e44ad;
@@ -239,11 +245,12 @@
     <div id="claimedTiles"></div>
     <script>
         const mapSize = 15;
-        const resources = ["wood", "food", "gold"];
+        const resources = ["wood", "food", "gold", "water"];
         const resourceImages = {
             wood: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-P2cpgbYaWOLVMBTPlJRHrLcXB-FneWE8jQ&s',
             food: 'https://i.pinimg.com/originals/c9/34/2d/c9342dce111123e808224dba1e55dc33.jpg',
-            gold: 'https://th.bing.com/th/id/OIP.mh3Gz18Yjvb3wMCdANgnbgAAAA?w=153&h=147&c=7&r=0&o=5&dpr=1.5&pid=1.7'
+            gold: 'https://th.bing.com/th/id/OIP.mh3Gz18Yjvb3wMCdANgnbgAAAA?w=153&h=147&c=7&r=0&o=5&dpr=1.5&pid=1.7',
+            water: 'https://t4.ftcdn.net/jpg/06/82/10/25/360_F_682102552_Fa6BhkjfRhzZFZjl9GvqMXDjCH57Aa6n.jpg'
         };
 
         const tileBackgrounds = [
@@ -406,9 +413,10 @@
             if (tile.building === "barracks") {
                 alert("This tile already has a barracks.");
             } else if (confirm("Would you like to claim and build barracks here?")) {
-                if (currentPlayer.gold >= 5000 && currentPlayer.wood >= 5000) {
+                if (currentPlayer.gold >= 5000 && currentPlayer.wood >= 5000 && currentPlayer.water >= 1000) {
                     currentPlayer.gold -= 5000;
                     currentPlayer.wood -= 5000;
+                    currentPlayer.water -= 1000;
                     buildBarracks(row, col);
                 } else {
                     alert("You don't have enough resources to build barracks.");
@@ -425,9 +433,10 @@
             if (tile.soldier) {
                 alert("This barracks already has a soldier. Move the soldier to create a new one.");
             } else if (confirm("Would you like to create a soldier here?")) {
-                if (currentPlayer.food >= 2000 && currentPlayer.wood >= 1000) {
+                if (currentPlayer.food >= 2000 && currentPlayer.wood >= 1000 && currentPlayer.water >= 1000) {
                     currentPlayer.food -= 2000;
                     currentPlayer.wood -= 1000;
+                    currentPlayer.water -= 100
                     createSoldier(row, col);
                 } else {
                     alert("You don't have enough resources to create a soldier.");
@@ -466,7 +475,7 @@
             players.forEach((player) => {
                 const playerResources = document.createElement("div");
                 playerResources.classList.add("player-resources");
-                playerResources.innerHTML = `<strong>${player.name} (${player.color}):</strong> Food: ${player.food}, Wood: ${player.wood}, Gold: ${player.gold}`;
+                playerResources.innerHTML = `<strong>${player.name} (${player.color}):</strong> Food: ${player.food}, Wood: ${player.wood}, Gold: ${player.gold}, Water: ${player.water}`;
                 resourcesElement.appendChild(playerResources);
             });
         }
@@ -538,11 +547,13 @@
                             player.wood += extractAmount;
                         } else if (tile.resource === 'gold') {
                             player.gold += extractAmount;
+                        } else if (tile.resource === 'water') {
+                            player.water += extractAmount;
                         }
 
                         if (tile.resourceAmount <= 0) {
                             tile.resource = null;
-                            tile.element.classList.remove('food', 'wood', 'gold');
+                            tile.element.classList.remove('food', 'wood', 'gold', 'water');
                             tile.element.innerHTML = `<img src="${tileBackgrounds[rowIndex * mapSize + colIndex]}" alt="Tile Background"><div class="overlay"></div>`;
                         } else {
                             tile.element.innerHTML = `<div class="resource"><img src="${resourceImages[tile.resource]}" alt="${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}"><div class="resource-name">${tile.resource.charAt(0).toUpperCase() + tile.resource.slice(1)}</div></div><div class="overlay"></div>`;
@@ -741,7 +752,7 @@ unitPosition2.health -= 100;
             let winner = null;
 
             players.forEach(player => {
-                const totalResources = player.food + player.wood + player.gold;
+                const totalResources = player.food + player.wood + player.gold + player.water;
                 const claimedTilesCount = map.flat().filter(tile => tile.claimedBy === player.id).length;
 
                 if (totalResources > maxResources || (totalResources === maxResources && claimedTilesCount > maxTiles)) {
