@@ -179,7 +179,10 @@
         }
 
         #status,
-        #resources {
+        #resources,
+        #scoutHealth,
+        #soldierHealth,
+        #claimedTiles {
             background: rgba(0, 0, 0, 0.7);
             padding: 10px;
             border-radius: 5px;
@@ -195,7 +198,10 @@
             margin-top: 20px;
         }
 
-        #resources .player-resources {
+        #resources .player-resources,
+        #scoutHealth .player-scout,
+        #soldierHealth .player-soldiers,
+        #claimedTiles .player-claimed-tiles {
             margin: 5px 0;
         }
 
@@ -212,7 +218,10 @@
             }
 
             #status,
-            #resources {
+            #resources,
+            #scoutHealth,
+            #soldierHealth,
+            #claimedTiles {
                 font-size: 1em;
                 padding: 5px;
             }
@@ -225,6 +234,9 @@
     <div id="map"></div>
     <div id="status"></div>
     <div id="resources"></div>
+    <div id="scoutHealth"></div>
+    <div id="soldierHealth"></div>
+    <div id="claimedTiles"></div>
     <script>
         const mapSize = 15;
         const resources = ["wood", "food", "gold"];
@@ -238,6 +250,7 @@
             'Tiles/tile_0012.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png',
             'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png',
             'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0013.png', 'Tiles/tile_0014.png',
+          
             'Tiles/tile_0024.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
             'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png',
             'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0025.png', 'Tiles/tile_0026.png',
@@ -284,10 +297,15 @@
 
         let players = JSON.parse(localStorage.getItem('players')) || [];
         let currentPlayerIndex = 0;
+        let currentRound = 1;
+        let gameEnded = false;
         let map = [];
         const mapElement = document.getElementById("map");
         const statusElement = document.getElementById("status");
         const resourcesElement = document.getElementById("resources");
+        const scoutHealthElement = document.getElementById("scoutHealth");
+        const soldierHealthElement = document.getElementById("soldierHealth");
+        const claimedTilesElement = document.getElementById("claimedTiles");
 
         function initMap() {
             let tileIndex = 0;
@@ -342,6 +360,8 @@
         }
 
         function handleTileClick(row, col) {
+            if (gameEnded) return;
+            
             const tile = map[row][col];
             const currentPlayer = players[currentPlayerIndex];
 
@@ -350,9 +370,9 @@
                 tile.location = "capital";
                 tile.element.classList.add(currentPlayer.color, "capital");
                 tile.element.innerHTML = `<div class="capital"><img src="https://th.bing.com/th/id/OIP.yR8w-_tRPepKOuXOR8_QCQAAAA?pid=ImgDet&w=177&h=149&c=7&dpr=1.5" alt="Capital"><div class="capital-name">Capital</div></div>`;
-                spawnUnit(row, col, "scout", "https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5", "Scout");
+                spawnUnit(row, col, "scout", "https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5", "scout", 300, 10);
                 currentPlayer.firstMove = false;
-                currentPlayer.scout = { row, col };
+                currentPlayer.scout = { row, col, health: 300, attack: 10 };
                 endTurn();
             } else if (tile.claimedBy === currentPlayer.id) {
                 if (tile.building === "barracks") {
@@ -360,8 +380,22 @@
                 } else {
                     showScoutOptions(row, col);
                 }
-            } else if (!currentPlayer.firstMove && currentPlayer.scout) {
-                moveScout(row, col);
+            } else if (!currentPlayer.firstMove) {
+                if (currentPlayer.soldiers.length > 0) {
+                    let unitOptions = ["scout"];
+                    for (let i = 0; i < currentPlayer.soldiers.length; i++) {
+                        unitOptions.push(`soldier${i + 1}`);
+                    }
+
+                    const unitType = prompt(`Do you want to move your ${unitOptions.join(" or ")}?`);
+                    if (unitOptions.includes(unitType)) {
+                        moveUnit(row, col, unitType);
+                    } else {
+                        alert("Invalid unit type. Please enter a valid unit type.");
+                    }
+                } else if (currentPlayer.scout) {
+                    moveUnit(row, col, "scout");
+                }
             }
         }
 
@@ -380,7 +414,7 @@
                     alert("You don't have enough resources to build barracks.");
                 }
             } else {
-                moveScout(row, col);
+                moveUnit(row, col, "scout");
             }
         }
 
@@ -388,8 +422,8 @@
             const currentPlayer = players[currentPlayerIndex];
             const tile = map[row][col];
 
-            if (tile.unit === "soldier") {
-                alert("This tile already has a soldier.");
+            if (tile.soldier) {
+                alert("This barracks already has a soldier. Move the soldier to create a new one.");
             } else if (confirm("Would you like to create a soldier here?")) {
                 if (currentPlayer.food >= 2000 && currentPlayer.wood >= 1000) {
                     currentPlayer.food -= 2000;
@@ -413,13 +447,18 @@
         }
 
         function createSoldier(row, col) {
-            spawnUnit(row, col, "soldier", "https://th.bing.com/th/id/OIP.1pFzwni7nJiMi1XBMYpUjQAAAA?pid=ImgDet&w=201&h=219&c=7&dpr=1.5", "Soldier");
+            const currentPlayer = players[currentPlayerIndex];
+            const soldierIndex = currentPlayer.soldiers.length;
+            const soldierName = `soldier${soldierIndex + 1}`;
+            currentPlayer.soldiers.push({ name: soldierName, health: 500, attack: 100, row, col });
+            spawnUnit(row, col, soldierName, "https://th.bing.com/th/id/OIP.1pFzwni7nJiMi1XBMYpUjQAAAA?pid=ImgDet&w=201&h=219&c=7&dpr=1.5", soldierName, 500, 100);
+            map[row][col].soldier = soldierName;
             endTurn();
         }
 
         function updateStatus() {
             const currentPlayer = players[currentPlayerIndex];
-            statusElement.innerText = `Current Player: ${currentPlayer.name}`;
+            statusElement.innerText = `Current Player: ${currentPlayer.name} - Round: ${currentRound}`;
         }
 
         function updateResourcesUI() {
@@ -432,13 +471,57 @@
             });
         }
 
+        function updateScoutHealthUI() {
+            scoutHealthElement.innerHTML = "";
+            players.forEach((player) => {
+                const playerScoutHealth = document.createElement("div");
+                playerScoutHealth.classList.add("player-scout");
+                playerScoutHealth.innerHTML = `<strong>${player.name} (${player.color}):</strong> Scouts: ${player.scout ? 1 : 0} (Health: ${player.scout ? player.scout.health : 'N/A'})`;
+                scoutHealthElement.appendChild(playerScoutHealth);
+            });
+        }
+
+        function updateSoldierHealthUI() {
+            soldierHealthElement.innerHTML = "";
+            players.forEach((player) => {
+                const playerSoldierHealth = document.createElement("div");
+                playerSoldierHealth.classList.add("player-soldiers");
+                const soldierHealthInfo = player.soldiers.map(soldier => `${soldier.name} (HP: ${soldier.health})`).join(', ');
+                playerSoldierHealth.innerHTML = `<strong>${player.name} (${player.color}):</strong> Soldiers: ${soldierHealthInfo}`;
+                soldierHealthElement.appendChild(playerSoldierHealth);
+            });
+        }
+
+        function updateClaimedTilesUI() {
+            claimedTilesElement.innerHTML = "";
+            players.forEach((player) => {
+                const claimedTilesCount = map.flat().filter(tile => tile.claimedBy === player.id).length;
+                const playerClaimedTiles = document.createElement("div");
+                playerClaimedTiles.classList.add("player-claimed-tiles");
+                playerClaimedTiles.innerHTML = `<strong>${player.name} (${player.color}):</strong> Claimed Tiles: ${claimedTilesCount}`;
+                claimedTilesElement.appendChild(playerClaimedTiles);
+            });
+        }
+
         function endTurn() {
+            if (gameEnded) return;
+            
             const currentPlayer = players[currentPlayerIndex];
             extractResources(currentPlayer);
 
             currentPlayerIndex = (currentPlayerIndex + 1) % players.length;
+            if (currentPlayerIndex === 0) {
+                currentRound++;
+                if (currentRound > 25) {
+                    declareWinner();
+                    return;
+                }
+            }
             updateStatus();
             updateResourcesUI();
+            updateScoutHealthUI();
+            updateSoldierHealthUI();
+            updateClaimedTilesUI();
         }
 
         function extractResources(player) {
@@ -469,55 +552,216 @@
             });
         }
 
-        function spawnUnit(row, col, unitType, imageUrl, unitName) {
+        function spawnUnit(row, col, unitType, imageUrl, unitName, health, attack) {
             const tile = map[row][col];
-            tile.unit = unitType;
-            tile.element.innerHTML += `<div class="unit"><img src="${imageUrl}" alt="${unitName}"><div class="unit-name">${unitName}</div></div>`;
+            tile.unit = { type: unitType, health, attack };
+            tile.element.innerHTML += `<div class="unit"><img src="${imageUrl}" alt="${unitName}"><div class="unit-name">${unitName} (HP: ${health})</div></div>`;
+            const currentPlayer = players[currentPlayerIndex];
+            currentPlayer[unitType] = { row, col, health, attack };
         }
 
-        function moveScout(newRow, newCol) {
+        function moveUnit(newRow, newCol, unitType) {
+            if (gameEnded) return;
+            
             const currentPlayer = players[currentPlayerIndex];
-            const scoutPosition = currentPlayer.scout;
-
+            const unitPosition = currentPlayer[unitType];
+            const unitPosition2 = currentPlayer.soldiers.find(unit => unit.name === unitType)
             const newTile = map[newRow][newCol];
-            if (scoutPosition && (newRow !== scoutPosition.row || newCol !== scoutPosition.col) && (!newTile.claimedBy || newTile.claimedBy === currentPlayer.id)) {
-                const currentTile = map[scoutPosition.row][scoutPosition.col];
-                const scoutElement = currentTile.element.querySelector(".unit");
 
-                if (scoutElement) {
-                    currentTile.element.removeChild(scoutElement);
+            if (unitPosition && (newRow !== unitPosition.row || newCol !== unitPosition.col)) {
+                const currentTile = map[unitPosition.row][unitPosition.col];
+                const unitElement = currentTile.element.querySelector(`.unit img[alt='${unitType}']`);
 
-                    if (currentTile.location === "capital") {
-                        currentTile.element.innerHTML += currentTile.element.dataset.capitalContent || "";
-                    } else if (currentTile.resource) {
-                        currentTile.element.innerHTML = `<div class="resource"><img src="${resourceImages[currentTile.resource]}" alt="${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}"><div class="resource-name">${currentTile.resource.charAt(0).toUpperCase() + currentTile.resource.slice(1)}</div></div>`;
+                if (unitElement) {
+                    unitElement.parentElement.remove();
+                    currentTile.unit = null;
+
+                  
+                    if (unitType.startsWith('soldier') && currentTile.building === "barracks") {
+                        currentTile.soldier = null;
                     }
                 }
 
-                const scoutHtml = `<div class="unit"><img src="https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5"><div class="unit-name">Scout</div></div>`;
-                const newScoutElement = document.createElement('div');
-                newScoutElement.innerHTML = scoutHtml;
-                newTile.element.appendChild(newScoutElement.firstChild);
+                if (newTile.claimedBy && newTile.claimedBy !== currentPlayer.id) {
+                    if (unitType.startsWith('soldier')) {
+                        unitPosition.health -= 100;
+unitPosition2.health -= 100;
+                        console.log(players)
+                        console.log(currentPlayer)
+                        console.log(unitPosition)
+                        endTurn()
 
-                newTile.unit = "scout";
-                newTile.claimedBy = currentPlayer.id;
-                newTile.element.classList.add(currentPlayer.color);
+                        if (unitPosition.health <= 0) {
+                            currentPlayer.soldiers = currentPlayer.soldiers.filter(soldier => soldier.name !== unitType);
+                            endTurn();
+                            return;
+                        }
 
-                if (newTile.resource) {
-                    const resourceElement = document.createElement('div');
-                    resourceElement.innerHTML = `<div class="resource"><img src="${resourceImages[newTile.resource]}" alt="${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}"><div class="resource-name">${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}</div></div>`;
-                    newTile.element.appendChild(resourceElement);
+                        const unitHtml = `<div class="unit"><img src="${unitType.startsWith('scout') ? 'https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5' : 'https://th.bing.com/th/id/OIP.1pFzwni7nJiMi1XBMYpUjQAAAA?pid=ImgDet&w=201&h=219&c=7&dpr=1.5'}" alt="${unitType}"><div class="unit-name">${unitType.charAt(0).toUpperCase() + unitType.slice(1)} (HP: ${unitPosition.health})</div></div>`;
+                        const newUnitElement = document.createElement('div');
+                        newUnitElement.innerHTML = unitHtml;
+                        newTile.element.appendChild(newUnitElement.firstChild);
+
+                        newTile.unit = { type: unitType, health: unitPosition.health, attack: unitPosition.attack };
+                        newTile.claimedBy = currentPlayer.id;
+                        newTile.element.className = `tile ${currentPlayer.color}`;
+
+                        if (newTile.building === "barracks" && !newTile.element.querySelector(`.unit img[alt='Barracks']`)) {
+                            const barracksHtml = `<div class="unit"><img src="https://th.bing.com/th/id/OIP.n5aND4i9DluNyOZsBP3RHwHaF4?w=196&h=176&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Barracks"><div class="unit-name">Barracks</div></div>`;
+                            const newBarracksElement = document.createElement('div');
+                            newBarracksElement.innerHTML = barracksHtml;
+                            newTile.element.appendChild(newBarracksElement.firstChild);
+                        }
+
+                        if (newTile.resource) {
+                            const resourceElement = document.createElement('div');
+                            resourceElement.innerHTML = `<div class="resource"><img src="${resourceImages[newTile.resource]}" alt="${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}"><div class="resource-name">${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}</div></div>`;
+                            newTile.element.appendChild(resourceElement);
+                        }
+
+                        currentPlayer[unitType] = { row: newRow, col: newCol, health: unitPosition.health, attack: unitPosition.attack };
+                        fightUnits(newRow, newCol);
+                        endTurn();
+                    } else {
+                        alert("Only soldiers can claim other player's tiles.");
+                        return;
+                    }
+                } else {
+                    const unitHtml = `<div class="unit"><img src="${unitType.startsWith('scout') ? 'https://th.bing.com/th/id/OIP.preHMNFw6v-GCPWoiALq8AHaHa?pid=ImgDet&w=180&h=180&c=7&dpr=1.5' : 'https://th.bing.com/th/id/OIP.1pFzwni7nJiMi1XBMYpUjQAAAA?pid=ImgDet&w=201&h=219&c=7&dpr=1.5'}" alt="${unitType}"><div class="unit-name">${unitType.charAt(0).toUpperCase() + unitType.slice(1)} (HP: ${unitPosition.health})</div></div>`;
+                    const newUnitElement = document.createElement('div');
+                    newUnitElement.innerHTML = unitHtml;
+                    newTile.element.appendChild(newUnitElement.firstChild);
+
+                    newTile.unit = { type: unitType, health: unitPosition.health, attack: unitPosition.attack };
+                    newTile.claimedBy = currentPlayer.id;
+                    newTile.element.classList.add(currentPlayer.color);
+
+                    if (newTile.building === "barracks" && !newTile.element.querySelector(`.unit img[alt='Barracks']`)) {
+                        const barracksHtml = `<div class="unit"><img src="https://th.bing.com/th/id/OIP.n5aND4i9DluNyOZsBP3RHwHaF4?w=196&h=176&c=7&r=0&o=5&dpr=1.5&pid=1.7" alt="Barracks"><div class="unit-name">Barracks</div></div>`;
+                        const newBarracksElement = document.createElement('div');
+                        newBarracksElement.innerHTML = barracksHtml;
+                        newTile.element.appendChild(newBarracksElement.firstChild);
+                    }
+
+                    if (newTile.resource) {
+                        const resourceElement = document.createElement('div');
+                        resourceElement.innerHTML = `<div class="resource"><img src="${resourceImages[newTile.resource]}" alt="${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}"><div class="resource-name">${newTile.resource.charAt(0).toUpperCase() + newTile.resource.slice(1)}</div></div>`;
+                        newTile.element.appendChild(resourceElement);
+                    }
+
+                    currentPlayer[unitType] = { row: newRow, col: newCol, health: unitPosition.health, attack: unitPosition.attack };
+                    endTurn();
                 }
-
-                currentPlayer.scout = { row: newRow, col: newCol };
-                endTurn();
             }
         }
 
+        function fightUnits(newRow, newCol) {
+            const unitsOnTile = [];
+
+            players.forEach((player) => {
+                player.soldiers.forEach((soldier) => {
+                    if (soldier.row === newRow && soldier.col === newCol) {
+                        unitsOnTile.push({ player, soldier });
+                    }
+                });
+            });
+
+            if (unitsOnTile.length > 1) {
+                let fighting = true;
+
+                while (fighting) {
+                    for (let i = 0; i < unitsOnTile.length; i++) {
+                        const attacker = unitsOnTile[i];
+                        const defender = unitsOnTile[(i + 1) % unitsOnTile.length];
+
+                        defender.soldier.health -= attacker.soldier.attack;
+                        attacker.soldier.health -= defender.soldier.attack;
+
+                        if (defender.soldier.health <= 0) {
+                            defender.player.soldiers = defender.player.soldiers.filter(
+                                (s) => s !== defender.soldier
+                            );
+                            unitsOnTile.splice((i + 1) % unitsOnTile.length, 1);
+                        }
+
+                        if (unitsOnTile.length === 1) {
+                            fighting = false;
+                            const winningPlayer = unitsOnTile[0].player;
+                            const tile = map[newRow][newCol];
+                            tile.claimedBy = winningPlayer.id;
+                            tile.element.className = `tile ${winningPlayer.color}`;
+                            updateSoldierHealthUI();
+
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        function fightUnitseveryturn(){
+            if (unitsOnTile.length > 1) {
+                let fighting = true;
+
+                while (fighting) {
+                    for (let i = 0; i < unitsOnTile.length; i++) {
+                        const attacker = unitsOnTile[i];
+                        const defender = unitsOnTile[(i + 1) % unitsOnTile.length];
+
+                        defender.soldier.health -= attacker.soldier.attack;
+                        attacker.soldier.health -= defender.soldier.attack;
+
+                        if (defender.soldier.health <= 0) {
+                            defender.player.soldiers = defender.player.soldiers.filter(
+                                (s) => s !== defender.soldier
+                            );
+                            unitsOnTile.splice((i + 1) % unitsOnTile.length, 1);
+                        }
+
+                        if (unitsOnTile.length === 1) {
+                            fighting = false;
+                            const winningPlayer = unitsOnTile[0].player;
+                            const tile = map[newRow][newCol];
+                            tile.claimedBy = winningPlayer.id;
+                            tile.element.className = `tile ${winningPlayer.color}`;
+                            updateSoldierHealthUI();
+
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
+        function declareWinner() {
+            gameEnded = true;
+
+            let maxResources = 0;
+            let maxTiles = 0;
+            let winner = null;
+
+            players.forEach(player => {
+                const totalResources = player.food + player.wood + player.gold;
+                const claimedTilesCount = map.flat().filter(tile => tile.claimedBy === player.id).length;
+
+                if (totalResources > maxResources || (totalResources === maxResources && claimedTilesCount > maxTiles)) {
+                    maxResources = totalResources;
+                    maxTiles = claimedTilesCount;
+                    winner = player;
+                }
+            });
+
+            alert(`The game has ended! The winner is ${winner.name} with ${maxResources} resources and ${maxTiles} claimed tiles.`);
+        }
+
         function initializeGame() {
+            players.forEach(player => player.soldiers = []);
             initMap();
             updateStatus();
             updateResourcesUI();
+            updateScoutHealthUI();
+            updateSoldierHealthUI();
+            updateClaimedTilesUI();
         }
 
         initializeGame();
